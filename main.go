@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/iiroj/go-git-staged/cmd"
@@ -13,6 +12,6 @@ func main() {
 	result := cmd.Execute(os.Args[1:])
 
 	if result.Error != nil {
-		log.Fatal(result.Error)
+		os.Exit((1))
 	}
 }
