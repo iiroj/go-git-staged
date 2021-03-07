@@ -1,0 +1,40 @@
+name: Build
+
+on: [push]
+
+jobs:
+  linux-amd64:
+    name: linux/amd64
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: "1"
+    steps:
+      - uses: actions/checkout@v2
+      - run: make PLATFORM=linux/amd64
+
+  darwin-arm64:
+    name: darwin/arm64
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: "1"
+    steps:
+      - uses: actions/checkout@v2
+      - run: make PLATFORM=darwin/arm64
+
+  darwin-amd64:
+    name: darwin/amd64
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: "1"
+    steps:
+      - uses: actions/checkout@v2
+      - run: make PLATFORM=darwin/amd64
+
+  windows-amd64:
+    name: windows/amd64
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: "1"
+    steps:
+      - uses: actions/checkout@v2
+      - run: make PLATFORM=windows/amd64
