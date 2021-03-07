@@ -3,7 +3,7 @@ name: Build
 on: [push]
 
 env:
-  BUILD_CACHE: /home/runner/.docker/buildkit
+  BUILD_CACHE: /var/lib/docker
   DOCKER_BUILDKIT: "1"
 
 jobs:
