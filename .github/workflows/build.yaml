@@ -15,7 +15,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_CACHE }}
-          key: ${{ hashFiles('Dockerfile') }}
+          key: ${{ hashFiles('Dockerfile', 'go.sum') }}
       - run: make PLATFORM=linux/amd64
       - uses: actions/upload-artifact@v2
         with:
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_CACHE }}
-          key: ${{ hashFiles('Dockerfile') }}
+          key: ${{ hashFiles('Dockerfile', 'go.sum') }}
       - run: make PLATFORM=darwin/arm64
       - uses: actions/upload-artifact@v2
         with:
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_CACHE }}
-          key: ${{ hashFiles('Dockerfile') }}
+          key: ${{ hashFiles('Dockerfile', 'go.sum') }}
       - run: make PLATFORM=darwin/amd64
       - uses: actions/upload-artifact@v2
         with:
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ${{ env.BUILD_CACHE }}
-          key: ${{ hashFiles('Dockerfile') }}
+          key: ${{ hashFiles('Dockerfile', 'go.sum') }}
       - run: make PLATFORM=windows/amd64
       - uses: actions/upload-artifact@v2
         with:
