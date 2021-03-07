@@ -43,6 +43,8 @@ func Execute(args []string) Result {
 	defaultWorkingDir, _ := os.Getwd()
 	// Declare variable for --working-dir flag
 	var workingDir string
+	// Declare variable for --relative flag
+	var relative bool
 
 	// The main go-git-staged command
 	var goGitStaged = &cobra.Command{
@@ -53,7 +55,7 @@ func Execute(args []string) Result {
 			spinner.Start()
 
 			// Open git repository
-			repository, repositoryError := internal.OpenRepository(workingDir)
+			repository, repositoryRoot, repositoryError := internal.OpenRepository(workingDir)
 			if repositoryError != nil {
 				spinner.StopFailMessage("Failed to open git repository")
 				spinner.StopFail()
@@ -83,6 +85,10 @@ func Execute(args []string) Result {
 				spinner.StopMessage(fmt.Sprintf("Going with %d staged files", len(stagedFiles)))
 			}
 
+			filepaths := internal.NormalizeFiles(stagedFiles, repositoryRoot, relative, workingDir)
+
+			fmt.Println(filepaths)
+
 			spinner.Stop()
 			return
 		},
@@ -90,6 +96,8 @@ func Execute(args []string) Result {
 
 	// Add a persistent --working-dir flag
 	goGitStaged.PersistentFlags().StringVarP(&workingDir, "working-dir", "w", defaultWorkingDir, "Working directory for commands")
+	// Add --relative flag
+	goGitStaged.Flags().BoolVar(&relative, "relative", false, "Use file paths relative to --working-dir (default \"false\")")
 
 	// Handle error by returning it in result
 	Error := goGitStaged.Execute()
