@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/iiroj/go-git-staged/internal"
 	"github.com/spf13/cobra"
 	"github.com/theckman/yacspin"
 )
@@ -51,19 +52,39 @@ func Execute(args []string) Result {
 			// Start spinner
 			spinner.Start()
 
-			// Check if workingDir exists
-			_, statError := os.Stat(workingDir)
-			// Fail if workingDir does not exist
-			if os.IsNotExist(statError) {
-				spinner.StopFailMessage("Failed to find a working directory")
+			// Open git repository
+			repository, repositoryError := internal.OpenRepository(workingDir)
+			if repositoryError != nil {
+				spinner.StopFailMessage("Failed to open git repository")
 				spinner.StopFail()
 				return
 			}
 
-			// Print workingDir and stop spinner.
-			// This is all the functionality for now.
-			spinner.StopMessage(fmt.Sprintf("workingDir: %s", workingDir))
+			// Get staged files
+			stagedFiles, stagedFilesError := internal.GetStagedFiles(repository)
+			if stagedFilesError != nil {
+				spinner.StopFailMessage("Failed to get staged files")
+				spinner.StopFail()
+				return
+			}
+
+			stagedFilesLen := len(stagedFiles)
+
+			if stagedFilesLen == 0 {
+				// Exit if there were no staged files
+				spinner.StopCharacter("ℹ︎ ")
+				spinner.StopColors("fgBlue")
+				spinner.StopMessage("No need to Go, working tree index is clean")
+			} else if stagedFilesLen == 1 {
+				// todo: is this the optimal way?
+				spinner.StopMessage("Going with 1 staged file")
+			} else {
+				// Update spinner with number of staged files
+				spinner.StopMessage(fmt.Sprintf("Going with %d staged files", len(stagedFiles)))
+			}
+
 			spinner.Stop()
+			return
 		},
 	}
 
