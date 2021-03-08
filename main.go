@@ -9,9 +9,7 @@ import (
 // Run go-git-staged cli
 func main() {
 	// Main cmd contains error handling, and a spinner
-	result := cmd.Execute(os.Args[1:])
-
-	if result.Error != nil {
+	if result := cmd.Execute(os.Args[1:]); result.Error != nil {
 		os.Exit((1))
 	}
 }

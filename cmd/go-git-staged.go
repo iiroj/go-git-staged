@@ -45,12 +45,17 @@ func Execute(args []string) Result {
 	var workingDir string
 	// Declare variable for --relative flag
 	var relative bool
+	// Declare variable for --glob flags
+	var globs []string
+	// Declare variable for --commands flags
+	var commands []string
 
 	// The main go-git-staged command
 	var goGitStaged = &cobra.Command{
-		Use:   "go-git-staged",
-		Short: "Run commands for files staged in git",
-		Run: func(cmd *cobra.Command, args []string) {
+		Use:     "go-git-staged",
+		Short:   "Run commands for files staged in git",
+		Example: "go-git-staged --glob '*.js' --command 'eslint' --command 'prettier'",
+		Run: func(cmd *cobra.Command, _ []string) {
 			// Start spinner
 			spinner.Start()
 
@@ -69,9 +74,7 @@ func Execute(args []string) Result {
 				spinner.StopFail()
 				return
 			}
-
 			stagedFilesLen := len(stagedFiles)
-
 			if stagedFilesLen == 0 {
 				// Exit if there were no staged files
 				spinner.StopCharacter("ℹ︎ ")
@@ -85,19 +88,45 @@ func Execute(args []string) Result {
 				spinner.StopMessage(fmt.Sprintf("Going with %d staged files", len(stagedFiles)))
 			}
 
-			filepaths := internal.NormalizeFiles(stagedFiles, repositoryRoot, relative, workingDir)
+			spinner.Stop()
+			spinner.Start()
 
-			fmt.Println(filepaths)
+			// Parse --glob and --command args to a map with files
+			_, globCommandsError := internal.ParseGlobCommands(args)
+			if globCommandsError != nil {
+				spinner.StopFailMessage(globCommandsError.Error())
+				spinner.StopFail()
+				return
+			}
+			spinner.Message("Got a valid configuration")
 
+			// Normalize file paths to either absolute or relative to workingDir
+			_, normalizedFilesError := internal.NormalizeFiles(stagedFiles, repositoryRoot, relative, workingDir)
+			if normalizedFilesError != nil {
+				spinner.StopFailMessage(normalizedFilesError.Error())
+				spinner.StopFail()
+				return
+			}
+
+			spinner.StopMessage("Got git staged!")
 			spinner.Stop()
 			return
 		},
 	}
 
-	// Add a persistent --working-dir flag
-	goGitStaged.PersistentFlags().StringVarP(&workingDir, "working-dir", "w", defaultWorkingDir, "Working directory for commands")
+	// Do not sort flags, because --glob should come before --command
+	goGitStaged.Flags().SortFlags = false
+
+	// Add --working-dir flag
+	goGitStaged.Flags().StringVarP(&workingDir, "working-dir", "w", defaultWorkingDir, "Working directory for commands")
 	// Add --relative flag
 	goGitStaged.Flags().BoolVar(&relative, "relative", false, "Use file paths relative to --working-dir (default \"false\")")
+	// Add --glob flags
+	goGitStaged.Flags().StringArrayVarP(&globs, "glob", "g", globs, "Glob of files passed to following --command")
+	goGitStaged.MarkFlagRequired("glob")
+	// Add --commands flags
+	goGitStaged.Flags().StringArrayVarP(&commands, "command", "c", commands, "Command to run with files matching previous --glob")
+	goGitStaged.MarkFlagRequired("command")
 
 	// Handle error by returning it in result
 	Error := goGitStaged.Execute()
