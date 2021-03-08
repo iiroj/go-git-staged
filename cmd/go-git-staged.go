@@ -46,7 +46,7 @@ func Execute(args []string) (err error) {
 		Use:     "go-git-staged",
 		Short:   "Run commands for files staged in git",
 		Example: "go-git-staged --glob '*.js' --command 'eslint' --command 'prettier'",
-		Run: func(cmd *cobra.Command, _ []string) {
+		RunE: func(cmd *cobra.Command, _ []string) (err error) {
 			// Start spinner
 			spinner.Start()
 
@@ -55,7 +55,7 @@ func Execute(args []string) (err error) {
 			if repositoryErr != nil {
 				spinner.StopFailMessage("Failed to open git repository")
 				spinner.StopFail()
-				return
+				return repositoryErr
 			}
 
 			// Get staged files
@@ -63,7 +63,7 @@ func Execute(args []string) (err error) {
 			if stagedFilesError != nil {
 				spinner.StopFailMessage("Failed to get staged files")
 				spinner.StopFail()
-				return
+				return stagedFilesError
 			}
 			stagedFilesLen := len(stagedFiles)
 			if stagedFilesLen == 0 {
@@ -72,7 +72,7 @@ func Execute(args []string) (err error) {
 				spinner.StopColors("fgBlue")
 				spinner.StopMessage("No need to Go, working tree index is clean")
 				spinner.Stop()
-				return
+				return nil
 			} else if stagedFilesLen == 1 {
 				// todo: is this the optimal way?
 				spinner.StopMessage("Going with 1 staged file")
@@ -89,7 +89,7 @@ func Execute(args []string) (err error) {
 			if globCommandsErr != nil {
 				spinner.StopFailMessage(globCommandsErr.Error())
 				spinner.StopFail()
-				return
+				return globCommandsErr
 			}
 			spinner.Message("Got a valid configuration")
 
@@ -98,7 +98,7 @@ func Execute(args []string) (err error) {
 			if normalizedFilesErr != nil {
 				spinner.StopFailMessage(normalizedFilesErr.Error())
 				spinner.StopFail()
-				return
+				return normalizedFilesErr
 			}
 			if relative == true {
 				spinner.Message("Got relative filenames")
@@ -111,14 +111,19 @@ func Execute(args []string) (err error) {
 			if commandsErr != nil {
 				spinner.StopFailMessage(commandsErr.Error())
 				spinner.StopFail()
-				return
+				return commandsErr
 			}
 
-			fmt.Println(commands)
+			// Create and run commands
+			if runErr := internal.RunCommands(commands); err != nil {
+				spinner.StopFailMessage(runErr.Error())
+				spinner.StopFail()
+				return runErr
+			}
 
 			spinner.StopMessage("Got git staged!")
 			spinner.Stop()
-			return
+			return nil
 		},
 	}
 
