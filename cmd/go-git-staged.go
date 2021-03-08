@@ -50,16 +50,16 @@ func Execute(args []string) (err error) {
 			// Start spinner
 			spinner.Start()
 
-			// Open git repository
-			repository, repositoryRoot, repositoryErr := internal.OpenRepository(workingDir)
-			if repositoryErr != nil {
-				spinner.StopFailMessage("Failed to open git repository")
+			// Resolve git root directory
+			rootDir, rootDirErr := internal.ResolveRootDir(workingDir)
+			if rootDirErr != nil {
+				spinner.StopFailMessage("Failed to resolve git directory")
 				spinner.StopFail()
-				return repositoryErr
+				return rootDirErr
 			}
 
 			// Get staged files
-			stagedFiles, stagedFilesError := internal.GetStagedFiles(repository)
+			stagedFiles, stagedFilesError := internal.GetStagedFiles()
 			if stagedFilesError != nil {
 				spinner.StopFailMessage("Failed to get staged files")
 				spinner.StopFail()
@@ -94,7 +94,7 @@ func Execute(args []string) (err error) {
 			spinner.Message("Got a valid configuration")
 
 			// Normalize file paths to either absolute or relative to workingDir
-			normalizedFiles, normalizedFilesErr := internal.NormalizeFiles(stagedFiles, repositoryRoot, relative, workingDir)
+			normalizedFiles, normalizedFilesErr := internal.NormalizeFiles(stagedFiles, rootDir, relative, workingDir)
 			if normalizedFilesErr != nil {
 				spinner.StopFailMessage(normalizedFilesErr.Error())
 				spinner.StopFail()

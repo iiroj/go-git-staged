@@ -34,7 +34,7 @@ func RunCommands(commands []Command) (err error) {
 			spinner, spinnerErr := yacspin.New(spinnerConfig)
 			if spinnerErr == nil {
 				spinner.Start()
-				spinner.StopMessage(fmt.Sprintf("%s (%d files): %s", globs, filesLen, commands))
+				spinner.StopMessage(fmt.Sprintf("%s (%d matches): %s", globs, filesLen, commands))
 				spinner.Stop()
 			}
 		}()

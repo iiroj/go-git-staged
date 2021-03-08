@@ -1,34 +1,24 @@
 package internal
 
 import (
-	"github.com/go-git/go-git/v5"
+	"os/exec"
+	"strings"
 )
 
 // GetStagedFiles returns a list of staged files of the given git repository
-func GetStagedFiles(repository *git.Repository) (files []string, err error) {
-	// Open worktree
-	worktree, worktreeError := repository.Worktree()
-	if worktreeError != nil {
-		return nil, worktreeError
+func GetStagedFiles() (files []string, err error) {
+	// The -z flag makes sure files are unquoted and separated by \u0000
+	// See https://git-scm.com/docs/git-diff#Documentation/git-diff.txt--z
+	cmd := exec.Command("git", "diff", "--staged", "--diff-filter=ACMR", "--name-only", "-z")
+	stdout, err := cmd.Output()
+	if err != nil {
+		return files, err
 	}
 
-	// Get worktree status
-	status, statusError := worktree.Status()
-	if statusError != nil {
-		return nil, statusError
-	}
-
-	// Initialize staged files array
-	files = make([]string, 0)
-
-	// Iterate statuses
-	for filename, fileStatus := range status {
-		// Add if file is added, copied, modified, or renamed in the staging area
-		switch fileStatus.Staging {
-		case git.Added, git.Copied, git.Modified, git.Renamed:
-			files = append(files, filename)
-		}
-	}
+	// Split string form \u0000 to get slice of files
+	files = strings.Split(string(stdout), "\u0000")
+	// The -z flags leaves a \u0000 at the end, so remove the last empty item
+	files = files[:len(files)-1]
 
 	return files, nil
 }
