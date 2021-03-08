@@ -94,7 +94,7 @@ func Execute(args []string) Result {
 			spinner.Start()
 
 			// Parse --glob and --command args to a map with files
-			_, globCommandsError := internal.ParseGlobCommands(args)
+			globCommands, globCommandsError := internal.ParseGlobCommands(args)
 			if globCommandsError != nil {
 				spinner.StopFailMessage(globCommandsError.Error())
 				spinner.StopFail()
@@ -103,12 +103,20 @@ func Execute(args []string) Result {
 			spinner.Message("Got a valid configuration")
 
 			// Normalize file paths to either absolute or relative to workingDir
-			_, normalizedFilesError := internal.NormalizeFiles(stagedFiles, repositoryRoot, relative, workingDir)
+			normalizedFiles, normalizedFilesError := internal.NormalizeFiles(stagedFiles, repositoryRoot, relative, workingDir)
 			if normalizedFilesError != nil {
 				spinner.StopFailMessage(normalizedFilesError.Error())
 				spinner.StopFail()
 				return
 			}
+			if relative == true {
+				spinner.Message("Got relative filenames")
+			} else {
+				spinner.Message("Got absolute filenames")
+			}
+
+			// Create commands to run
+			internal.CreateCommands(globCommands, normalizedFiles)
 
 			spinner.StopMessage("Got git staged!")
 			spinner.Stop()

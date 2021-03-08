@@ -11,22 +11,21 @@ func NormalizeFiles(files []string, basePath string, relative bool, relativeTo s
 	// Resolve absolute paths for files relative to basePath
 	if relative == false {
 		absoluteFiles := make([]string, len(files))
-		for _, file := range files {
-			absoluteFile := filepath.Join(basePath, file)
-			absoluteFiles = append(absoluteFiles, absoluteFile)
+		for i, file := range files {
+			absoluteFiles[i] = filepath.Join(basePath, file)
 		}
 
 		return absoluteFiles, nil
 	}
 
-	relativePaths := make([]string, len(files))
-	for _, file := range files {
+	relativeFiles := make([]string, len(files))
+	for i, file := range files {
 		relativeFile, relativeFileError := filepath.Rel(relativeTo, filepath.Join(basePath, file))
 		if relativeFileError != nil {
 			return nil, errors.New("Failed to normalize relative filenames")
 		}
-		relativePaths = append(relativePaths, relativeFile)
+		relativeFiles[i] = relativeFile
 	}
 
-	return relativePaths, nil
+	return relativeFiles, nil
 }
