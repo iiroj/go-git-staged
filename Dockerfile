@@ -11,7 +11,7 @@ ARG TARGETARCH
 RUN --mount=target=. \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /out/go-git-staged .
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -o /out/go-git-staged .
 
 FROM scratch AS bin-unix
 COPY --from=build /out/go-git-staged /
