@@ -53,7 +53,7 @@ func ParseGlobCommands(args []string) (pairs []Pair, err error) {
 				// Append arg to the current globs
 				pairs[currentGlobIndex] = Pair{append(globs, str), commands}
 			} else {
-				globs := make([]string, 1)
+				globs := make([]string, 0)
 				globs = append(globs, str)
 				commands := make([]string, 0)
 				pairs = append(pairs, Pair{globs, commands})
