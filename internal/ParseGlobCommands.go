@@ -10,7 +10,7 @@ type Pair struct {
 }
 
 // ParseGlobCommands parses the command line arguments --glob and --command to a mapping
-func ParseGlobCommands(args []string) (globCommands []Pair, err error) {
+func ParseGlobCommands(args []string) (pairs []Pair, err error) {
 	// Filter args other than --working-dir or --relative
 	filteredArgs := make([]string, 0)
 	for _, str := range args {
@@ -20,7 +20,7 @@ func ParseGlobCommands(args []string) (globCommands []Pair, err error) {
 	}
 
 	// Initialize globCommands
-	pairs := make([]Pair, 0)
+	pairs = make([]Pair, 0)
 	// At the start, current arg hast to be a glob
 	currentIsGlob, currentGlobIndex := true, 0
 

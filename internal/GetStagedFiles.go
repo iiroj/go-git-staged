@@ -19,16 +19,16 @@ func GetStagedFiles(repository *git.Repository) (files []string, err error) {
 	}
 
 	// Initialize staged files array
-	stagedFiles := make([]string, 0)
+	files = make([]string, 0)
 
 	// Iterate statuses
 	for filename, fileStatus := range status {
 		// Add if file is added, copied, modified, or renamed in the staging area
 		switch fileStatus.Staging {
 		case git.Added, git.Copied, git.Modified, git.Renamed:
-			stagedFiles = append(stagedFiles, filename)
+			files = append(files, filename)
 		}
 	}
 
-	return stagedFiles, nil
+	return files, nil
 }

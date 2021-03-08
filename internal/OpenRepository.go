@@ -30,20 +30,20 @@ func findDotGit(start string) (directory string) {
 }
 
 // OpenRepository resolves the git repository from the supplied pathname
-func OpenRepository(pathname string) (repository *git.Repository, repositoryRoot string, err error) {
+func OpenRepository(pathname string) (repository *git.Repository, rootDir string, err error) {
 	// Fail if pathname does not exist
 	if _, statError := os.Stat(pathname); os.IsNotExist(statError) {
 		return nil, "", statError
 	}
 
 	// Find directory containing .git, starting from pathname
-	directory := findDotGit(pathname)
+	rootDir = findDotGit(pathname)
 
 	// Open repository
-	repository, repositoryError := git.PlainOpen(directory)
+	repository, repositoryError := git.PlainOpen(rootDir)
 	if repositoryError != nil {
 		return nil, "", repositoryError
 	}
 
-	return repository, directory, nil
+	return repository, rootDir, nil
 }

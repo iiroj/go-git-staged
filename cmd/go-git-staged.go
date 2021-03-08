@@ -21,22 +21,13 @@ var spinnerConfig = yacspin.Config{
 	StopFailColors:    []string{"fgRed"},
 }
 
-// Result for Execute
-type Result struct {
-	Error error
-}
-
-// Execute main entrypoint
-func Execute(args []string) Result {
-	// Declare result for error handling
-	var result Result
-
+// Execute go-lint-staged root command
+func Execute(args []string) (err error) {
 	// Create spinner with static config from above
 	spinner, spinnerError := yacspin.New(spinnerConfig)
 	// Spinner error handling
 	if spinnerError != nil {
-		result.Error = spinnerError
-		return result
+		return spinnerError
 	}
 
 	// Get default working dir
@@ -60,8 +51,8 @@ func Execute(args []string) Result {
 			spinner.Start()
 
 			// Open git repository
-			repository, repositoryRoot, repositoryError := internal.OpenRepository(workingDir)
-			if repositoryError != nil {
+			repository, repositoryRoot, repositoryErr := internal.OpenRepository(workingDir)
+			if repositoryErr != nil {
 				spinner.StopFailMessage("Failed to open git repository")
 				spinner.StopFail()
 				return
@@ -94,18 +85,18 @@ func Execute(args []string) Result {
 			spinner.Start()
 
 			// Parse --glob and --command args to a map with files
-			globCommands, globCommandsError := internal.ParseGlobCommands(args)
-			if globCommandsError != nil {
-				spinner.StopFailMessage(globCommandsError.Error())
+			globCommands, globCommandsErr := internal.ParseGlobCommands(args)
+			if globCommandsErr != nil {
+				spinner.StopFailMessage(globCommandsErr.Error())
 				spinner.StopFail()
 				return
 			}
 			spinner.Message("Got a valid configuration")
 
 			// Normalize file paths to either absolute or relative to workingDir
-			normalizedFiles, normalizedFilesError := internal.NormalizeFiles(stagedFiles, repositoryRoot, relative, workingDir)
-			if normalizedFilesError != nil {
-				spinner.StopFailMessage(normalizedFilesError.Error())
+			normalizedFiles, normalizedFilesErr := internal.NormalizeFiles(stagedFiles, repositoryRoot, relative, workingDir)
+			if normalizedFilesErr != nil {
+				spinner.StopFailMessage(normalizedFilesErr.Error())
 				spinner.StopFail()
 				return
 			}
@@ -115,8 +106,15 @@ func Execute(args []string) Result {
 				spinner.Message("Got absolute filenames")
 			}
 
-			// Create commands to run
-			internal.CreateCommands(globCommands, normalizedFiles)
+			// Match files to commands
+			commands, commandsErr := internal.MatchFilesToCommands(globCommands, normalizedFiles)
+			if commandsErr != nil {
+				spinner.StopFailMessage(commandsErr.Error())
+				spinner.StopFail()
+				return
+			}
+
+			fmt.Println(commands)
 
 			spinner.StopMessage("Got git staged!")
 			spinner.Stop()
@@ -139,11 +137,9 @@ func Execute(args []string) Result {
 	goGitStaged.MarkFlagRequired("command")
 
 	// Handle error by returning it in result
-	Error := goGitStaged.Execute()
-	if Error != nil {
-		result.Error = Error
-		return result
+	if error := goGitStaged.Execute(); error != nil {
+		return error
 	}
 
-	return result
+	return nil
 }

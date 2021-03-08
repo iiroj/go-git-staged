@@ -1,8 +1,6 @@
 package internal
 
 import (
-	"fmt"
-
 	"github.com/bmatcuk/doublestar/v2"
 )
 
@@ -11,14 +9,14 @@ type Command struct {
 	globs, files, commands []string
 }
 
-// CreateCommands resolves filenames to their commands
-func CreateCommands(pairs []Pair, filenames []string) (commands []Command, err error) {
+// MatchFilesToCommands resolves files to their commands
+func MatchFilesToCommands(pairs []Pair, files []string) (commands []Command, err error) {
 	commands = make([]Command, 0)
 
 	for _, pair := range pairs {
 		matches := make([]string, 0)
 		for _, glob := range pair.globs {
-			for _, filename := range filenames {
+			for _, filename := range files {
 				match, matchError := doublestar.PathMatch(glob, filename)
 				if matchError != nil {
 					return nil, matchError
@@ -32,10 +30,6 @@ func CreateCommands(pairs []Pair, filenames []string) (commands []Command, err e
 		if len(matches) > 0 {
 			commands = append(commands, Command{pair.globs, matches, pair.commands})
 		}
-	}
-
-	for _, command := range commands {
-		fmt.Println(command)
 	}
 
 	return commands, nil
