@@ -80,6 +80,8 @@ func Execute(args []string) Result {
 				spinner.StopCharacter("ℹ︎ ")
 				spinner.StopColors("fgBlue")
 				spinner.StopMessage("No need to Go, working tree index is clean")
+				spinner.Stop()
+				return
 			} else if stagedFilesLen == 1 {
 				// todo: is this the optimal way?
 				spinner.StopMessage("Going with 1 staged file")
