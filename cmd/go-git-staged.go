@@ -3,33 +3,13 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/iiroj/go-git-staged/internal"
 	"github.com/spf13/cobra"
-	"github.com/theckman/yacspin"
 )
 
-// Some configuration for spinner.
-// Characters contain a space to separate from messages.
-var spinnerConfig = yacspin.Config{
-	Frequency:         100 * time.Millisecond,
-	CharSet:           yacspin.CharSets[14],
-	StopCharacter:     "✓ ",
-	StopColors:        []string{"fgGreen"},
-	StopFailCharacter: "𐄂 ",
-	StopFailColors:    []string{"fgRed"},
-}
-
 // Execute go-lint-staged root command
-func Execute(args []string) (err error) {
-	// Create spinner with static config from above
-	spinner, spinnerError := yacspin.New(spinnerConfig)
-	// Spinner error handling
-	if spinnerError != nil {
-		return spinnerError
-	}
-
+func Execute(args []string) (failedCommands int) {
 	// Get default working dir
 	defaultWorkingDir, _ := os.Getwd()
 	// Declare variable for --working-dir flag
@@ -40,91 +20,91 @@ func Execute(args []string) (err error) {
 	var globs []string
 	// Declare variable for --commands flags
 	var commands []string
+	// Declare variable for number of failed commands
+	failedCommands = 0
 
 	// The main go-git-staged command
 	var goGitStaged = &cobra.Command{
 		Use:     "go-git-staged",
 		Short:   "Run commands for files staged in git",
 		Example: "go-git-staged --glob '*.js' --command 'eslint' --command 'prettier'",
-		RunE: func(cmd *cobra.Command, _ []string) (err error) {
-			// Start spinner
-			spinner.Start()
+	}
 
-			// Resolve git root directory
-			rootDir, rootDirErr := internal.ResolveRootDir(workingDir)
-			if rootDirErr != nil {
-				spinner.StopFailMessage("Failed to resolve git directory")
-				spinner.StopFail()
-				return rootDirErr
-			}
+	goGitStaged.Run = func(cmd *cobra.Command, _ []string) {
+		// Resolve git root directory
+		rootDir, rootDirErr := internal.ResolveRootDir(workingDir)
+		if rootDirErr != nil {
+			fmt.Printf("%s Failed to resolve git directory\n", internal.FailChar)
+			return
+		}
 
-			// Get staged files
-			stagedFiles, stagedFilesError := internal.GetStagedFiles()
-			if stagedFilesError != nil {
-				spinner.StopFailMessage("Failed to get staged files")
-				spinner.StopFail()
-				return stagedFilesError
-			}
-			stagedFilesLen := len(stagedFiles)
-			if stagedFilesLen == 0 {
-				// Exit if there were no staged files
-				spinner.StopCharacter("ℹ︎ ")
-				spinner.StopColors("fgBlue")
-				spinner.StopMessage("No need to Go, working tree index is clean")
-				spinner.Stop()
-				return nil
-			} else if stagedFilesLen == 1 {
-				// todo: is this the optimal way?
-				spinner.StopMessage("Going with 1 staged file")
-			} else {
-				// Update spinner with number of staged files
-				spinner.StopMessage(fmt.Sprintf("Going with %d staged files", len(stagedFiles)))
-			}
+		// Get staged files
+		stagedFiles, stagedFilesError := internal.GetStagedFiles()
+		if stagedFilesError != nil {
+			fmt.Printf("%s Failed to get staged files\n", internal.FailChar)
+			return
+		}
+		stagedFilesLen := len(stagedFiles)
+		if stagedFilesLen == 0 {
+			// Exit if there were no staged files
+			fmt.Printf("%s No need to Go, working tree index is clean\n", internal.InfoChar)
+			return
+		} else if stagedFilesLen == 1 {
+			// todo: is this the optimal way?
+			fmt.Printf("%s Going with 1 staged file\n", internal.DoneChar)
+		} else {
+			// Update spinner with number of staged files
+			fmt.Printf("%s Going with %d staged files\n", internal.DoneChar, len(stagedFiles))
+		}
 
-			spinner.Stop()
-			spinner.Start()
+		// Parse --glob and --command args to a map with files
+		globCommands, globCommandsErr := internal.ParseGlobCommands(args)
+		if globCommandsErr != nil {
+			fmt.Printf("%s %s", internal.FailChar, globCommandsErr.Error())
+			return
+		}
 
-			// Parse --glob and --command args to a map with files
-			globCommands, globCommandsErr := internal.ParseGlobCommands(args)
-			if globCommandsErr != nil {
-				spinner.StopFailMessage(globCommandsErr.Error())
-				spinner.StopFail()
-				return globCommandsErr
-			}
-			spinner.Message("Got a valid configuration")
+		// Normalize file paths to either absolute or relative to workingDir
+		normalizedFiles, normalizedFilesErr := internal.NormalizeFiles(stagedFiles, rootDir, relative, workingDir)
+		if normalizedFilesErr != nil {
+			fmt.Printf("%s %s", internal.FailChar, normalizedFilesErr.Error())
+			return
+		}
 
-			// Normalize file paths to either absolute or relative to workingDir
-			normalizedFiles, normalizedFilesErr := internal.NormalizeFiles(stagedFiles, rootDir, relative, workingDir)
-			if normalizedFilesErr != nil {
-				spinner.StopFailMessage(normalizedFilesErr.Error())
-				spinner.StopFail()
-				return normalizedFilesErr
-			}
-			if relative == true {
-				spinner.Message("Got relative filenames")
-			} else {
-				spinner.Message("Got absolute filenames")
-			}
+		// Match files to commands
+		commands, _ := internal.MatchFilesToCommands(globCommands, normalizedFiles)
 
-			// Match files to commands
-			commands, commandsErr := internal.MatchFilesToCommands(globCommands, normalizedFiles)
-			if commandsErr != nil {
-				spinner.StopFailMessage(commandsErr.Error())
-				spinner.StopFail()
-				return commandsErr
-			}
+		// Create and run commands
+		commandResults := internal.RunCommands(commands)
 
-			// Create and run commands
-			if runErr := internal.RunCommands(commands); err != nil {
-				spinner.StopFailMessage(runErr.Error())
-				spinner.StopFail()
-				return runErr
+		for _, commandResult := range commandResults {
+			if commandResult.Err != nil {
+				failedCommands++
 			}
+		}
 
-			spinner.StopMessage("Got git staged!")
-			spinner.Stop()
-			return nil
-		},
+		if failedCommands == 0 {
+			fmt.Printf("%s Got git staged!\n", internal.DoneChar)
+			return
+		}
+
+		if failedCommands == 1 {
+			fmt.Printf("%s Got 1 failure from commands\n", internal.FailChar)
+		} else {
+			fmt.Printf("%s Got %d failes from commands:\n", internal.FailChar, failedCommands)
+		}
+
+		goGitStaged.SilenceUsage = true
+
+		fmt.Println()
+
+		for _, commandResult := range commandResults {
+			if commandResult.Err != nil {
+				fmt.Println(fmt.Sprintf("%s %s:", internal.FailChar, commandResult.Label))
+				fmt.Println(commandResult.Err.Error())
+				fmt.Println()
+			}
+		}
 	}
 
 	// Do not sort flags, because --glob should come before --command
@@ -143,8 +123,8 @@ func Execute(args []string) (err error) {
 
 	// Handle error by returning it in result
 	if error := goGitStaged.Execute(); error != nil {
-		return error
+		return 1
 	}
 
-	return nil
+	return failedCommands
 }

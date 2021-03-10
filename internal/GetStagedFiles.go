@@ -9,7 +9,8 @@ import (
 func GetStagedFiles() (files []string, err error) {
 	// The -z flag makes sure files are unquoted and separated by \u0000
 	// See https://git-scm.com/docs/git-diff#Documentation/git-diff.txt--z
-	cmd := exec.Command("git", "diff", "--staged", "--diff-filter=ACMR", "--name-only", "-z")
+	// cmd := exec.Command("git", "diff", "--staged", "--diff-filter=ACMR", "--name-only", "-z")
+	cmd := exec.Command("git", "ls-files", "-z")
 	stdout, err := cmd.Output()
 	if err != nil {
 		return files, err
