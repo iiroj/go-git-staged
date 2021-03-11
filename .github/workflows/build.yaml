@@ -22,6 +22,7 @@ jobs:
           name: go-git-staged_linux-arm64
           path: bin/go-git-staged
           if-no-files-found: error
+          retention-days: 1
 
   darwin-arm64:
     name: darwin/arm64
@@ -38,6 +39,7 @@ jobs:
           name: go-git-staged_darwin-arm64
           path: bin/go-git-staged
           if-no-files-found: error
+          retention-days: 1
 
   darwin-amd64:
     name: darwin/amd64
@@ -54,6 +56,7 @@ jobs:
           name: go-git-staged_darwin-amd64
           path: bin/go-git-staged
           if-no-files-found: error
+          retention-days: 1
 
   windows-amd64:
     name: windows/amd64
@@ -70,3 +73,4 @@ jobs:
           name: go-git-staged_windows-amd64
           path: bin/go-git-staged.exe
           if-no-files-found: error
+          retention-days: 1
