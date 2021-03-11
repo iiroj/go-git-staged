@@ -30,7 +30,7 @@ func Execute(args []string) (failedCommands int) {
 	// The main go-git-staged command
 	var goGitStaged = &cobra.Command{
 		Use:     "go-git-staged",
-		Short:   "Run commands for files staged in git",
+		Short:   "Run commands on files staged in git.\nFilter files using globs and pass them to their respective commands as arguments.",
 		Example: "go-git-staged --glob '*.js' --command 'eslint' --command 'prettier'",
 	}
 
