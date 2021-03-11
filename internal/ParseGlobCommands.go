@@ -4,6 +4,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Filter out known args. These should probably be variables
+func notKnownArg(str string) bool {
+	return str != "-a" && str != "--all" && str != "-w" && str != "--working-dir" && str != "--relative" && str != "-v" && str != "--verbose"
+}
+
 // Pair holds mapping of globs and their commands
 type Pair struct {
 	globs, commands []string
@@ -14,7 +19,7 @@ func ParseGlobCommands(args []string) (pairs []Pair, err error) {
 	// Filter args other than --working-dir, --relative, --verbose
 	filteredArgs := make([]string, 0)
 	for _, str := range args {
-		if str != "-w" && str != "--working-dir" && str != "--relative" && str != "--verbose" && str != "-v" {
+		if notKnownArg(str) {
 			filteredArgs = append(filteredArgs, str)
 		}
 	}

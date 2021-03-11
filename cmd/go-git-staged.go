@@ -10,6 +10,8 @@ import (
 
 // Execute go-lint-staged root command
 func Execute(args []string) (failedCommands int) {
+	// Declare variable for --all flag
+	var allFiles bool
 	// Get default working dir
 	defaultWorkingDir, _ := os.Getwd()
 	// Declare variable for --working-dir flag
@@ -41,22 +43,22 @@ func Execute(args []string) (failedCommands int) {
 		}
 
 		// Get staged files
-		stagedFiles, stagedFilesError := internal.GetStagedFiles()
-		if stagedFilesError != nil {
+		files, filesErr := internal.GetFiles(allFiles == false)
+		if filesErr != nil {
 			fmt.Printf("%s Failed to get staged files\n", internal.FailChar)
 			return
 		}
-		stagedFilesLen := len(stagedFiles)
-		if stagedFilesLen == 0 {
+		filesLen := len(files)
+		if filesLen == 0 {
 			// Exit if there were no staged files
 			fmt.Printf("%s No need to Go, working tree index is clean\n", internal.InfoChar)
 			return
-		} else if stagedFilesLen == 1 {
+		} else if filesLen == 1 {
 			// todo: is this the optimal way?
 			fmt.Printf("%s Going with 1 staged file\n", internal.DoneChar)
 		} else {
 			// Update spinner with number of staged files
-			fmt.Printf("%s Going with %d staged files\n", internal.DoneChar, len(stagedFiles))
+			fmt.Printf("%s Going with %d staged files\n", internal.DoneChar, filesLen)
 		}
 
 		// Parse --glob and --command args to a map with files
@@ -67,7 +69,7 @@ func Execute(args []string) (failedCommands int) {
 		}
 
 		// Normalize file paths to either absolute or relative to workingDir
-		normalizedFiles, normalizedFilesErr := internal.NormalizeFiles(stagedFiles, rootDir, relative, workingDir)
+		normalizedFiles, normalizedFilesErr := internal.NormalizeFiles(files, rootDir, relative, workingDir)
 		if normalizedFilesErr != nil {
 			fmt.Printf("%s %s", internal.FailChar, normalizedFilesErr.Error())
 			return
@@ -132,6 +134,8 @@ func Execute(args []string) (failedCommands int) {
 	// Do not sort flags, because --glob should come before --command
 	goGitStaged.Flags().SortFlags = false
 
+	// Add --all flag
+	goGitStaged.Flags().BoolVarP(&allFiles, "all", "a", false, "Glob all files known to git instead of just staged")
 	// Add --working-dir flag
 	goGitStaged.Flags().StringVarP(&workingDir, "working-dir", "w", defaultWorkingDir, "Working directory for commands")
 	// Add --relative flag
