@@ -19,27 +19,48 @@ func RunCommands(commands []Command) (commandResults []CommandResult) {
 	var wg sync.WaitGroup
 	// Initialize slice for CommandResults
 	commandResults = make([]CommandResult, 0)
+	// Initialize slice for all command groups.
+	// The inner list should be run serially, and the outer concurrently.
+	commandGroups := make([][]func(), len(commands))
 
-	for _, command := range commands {
+	for i, command := range commands {
 		files := command.files
 
 		// Print a label for the current glob slice, and how many files they matched
 		fmt.Printf("  %s %d files (%s):\n", RunChar, len(files), strings.Join(command.globs, ", "))
 
-		for _, command := range command.commands {
+		// Group all commands
+		commandGroup := make([]func(), len(command.commands))
+
+		for k, c := range command.commands {
+			// Assign loop variable so it stays in the func
+			command := c
 			// Print the current command as a string
 			fmt.Printf("    %s\n", command)
 
-			wg.Add(1)
-
 			// Run the command in a goroutine, and gather errors
-			go func(command string) {
+			commandGroup[k] = func() {
 				cmd := exec.Command(command, files...)
 				_, err := cmd.Output()
 				commandResults = append(commandResults, CommandResult{command, err})
-				wg.Done()
-			}(command)
+			}
 		}
+
+		commandGroups[i] = commandGroup
+	}
+
+	wg.Add(len(commandGroups))
+	for _, commands := range commandGroups {
+		runCommands := func(commands []func()) {
+			// Run all commands in a group serially
+			for _, command := range commands {
+				command()
+			}
+			wg.Done()
+		}
+
+		// Run all groups concurrently
+		go runCommands(commands)
 	}
 
 	// Wait until all commands are done
