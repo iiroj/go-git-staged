@@ -96,7 +96,7 @@ func Execute(args []string) (failedCommands int) {
 
 				for _, commandResult := range commandResults {
 					if len(commandResult.Stdout) > 0 {
-						fmt.Println(fmt.Sprintf("%s %s:", internal.InfoChar, commandResult.Label))
+						fmt.Println(fmt.Sprintf("%s %s (%s):", internal.RunChar, commandResult.Label, commandResult.Info))
 						fmt.Println(string(commandResult.Stdout))
 					}
 				}
@@ -122,7 +122,7 @@ func Execute(args []string) (failedCommands int) {
 		// Print the command label and error message for each fail
 		for _, commandResult := range commandResults {
 			if commandResult.Err != nil {
-				fmt.Println(fmt.Sprintf("%s %s:", internal.FailChar, commandResult.Label))
+				fmt.Println(fmt.Sprintf("%s %s (%s):", internal.RunChar, commandResult.Label, commandResult.Info))
 				fmt.Println(commandResult.Err.Error())
 				fmt.Println()
 			}

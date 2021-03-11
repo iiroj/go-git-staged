@@ -6,13 +6,13 @@ var (
 	magenta = color.New(color.FgMagenta).SprintFunc()
 	// RunChar is a magenta ❯
 	RunChar = magenta("❯")
-	red     = color.New(color.FgRed).SprintFunc()
+	Red     = color.New(color.FgRed).SprintFunc()
 	// FailChar is a red ×
-	FailChar = red("×")
+	FailChar = Red("×")
 	green    = color.New(color.FgGreen).SprintFunc()
 	// DoneChar is a green ✔︎
 	DoneChar = green("✔︎")
-	blue     = color.New(color.FgBlue).SprintFunc()
+	Blue     = color.New(color.FgBlue).SprintFunc()
 	// InfoChar is a blue ℹ︎✔
-	InfoChar = blue("ℹ︎")
+	InfoChar = Blue("ℹ︎")
 )

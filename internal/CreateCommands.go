@@ -10,6 +10,7 @@ import (
 // CommandResult contains the result of a single command
 type CommandResult struct {
 	Label  string
+	Info   string
 	Stdout []byte
 	Err    error
 }
@@ -28,7 +29,8 @@ func RunCommands(commands []Command) (commandResults []CommandResult) {
 		files := command.files
 
 		// Print a label for the current glob slice, and how many files they matched
-		fmt.Printf("  %s %d files (%s):\n", RunChar, len(files), strings.Join(command.globs, ", "))
+		info := fmt.Sprintf("%d files (%s)", len(files), strings.Join(command.globs, ", "))
+		fmt.Printf("  %s %s:\n", RunChar, info)
 
 		// Group all commands
 		commandGroup := make([]func(), len(command.commands))
@@ -43,7 +45,7 @@ func RunCommands(commands []Command) (commandResults []CommandResult) {
 			commandGroup[k] = func() {
 				cmd := exec.Command(command, files...)
 				stdout, err := cmd.Output()
-				commandResults = append(commandResults, CommandResult{command, stdout, err})
+				commandResults = append(commandResults, CommandResult{command, info, stdout, err})
 			}
 		}
 
