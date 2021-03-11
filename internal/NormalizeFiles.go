@@ -19,6 +19,7 @@ func NormalizeFiles(files []string, basePath string, relative bool, relativeTo s
 	}
 
 	for i, file := range absoluteFiles {
+		// Relative to the current CWD, instead of the git repo root
 		relativeFile, relativeFileError := filepath.Rel(relativeTo, file)
 		if relativeFileError != nil {
 			return nil, errors.New("Failed to normalize relative filenames")

@@ -77,27 +77,34 @@ func Execute(args []string) (failedCommands int) {
 		// Create and run commands
 		commandResults := internal.RunCommands(commands)
 
+		// Gather up the number of failed results
 		for _, commandResult := range commandResults {
 			if commandResult.Err != nil {
 				failedCommands++
 			}
 		}
 
+		// Successful exit
 		if failedCommands == 0 {
 			fmt.Printf("%s Got git staged!\n", internal.DoneChar)
 			return
 		}
 
+		// There were failed results
 		if failedCommands == 1 {
 			fmt.Printf("%s Got 1 failure from commands\n", internal.FailChar)
 		} else {
 			fmt.Printf("%s Got %d failes from commands:\n", internal.FailChar, failedCommands)
 		}
 
+		// Do not show cobra help message in this case
+		// because we only report errors and call os.Exit(1)
 		goGitStaged.SilenceUsage = true
 
+		// Separate errors with an empty line
 		fmt.Println()
 
+		// Print the command label and error message for each fail
 		for _, commandResult := range commandResults {
 			if commandResult.Err != nil {
 				fmt.Println(fmt.Sprintf("%s %s:", internal.FailChar, commandResult.Label))
@@ -121,10 +128,11 @@ func Execute(args []string) (failedCommands int) {
 	goGitStaged.Flags().StringArrayVarP(&commands, "command", "c", commands, "Command to run with files matching previous --glob")
 	goGitStaged.MarkFlagRequired("command")
 
-	// Handle error by returning it in result
+	// If the execute failed for some other reason, assume 1 error
 	if error := goGitStaged.Execute(); error != nil {
 		return 1
 	}
 
+	// Return the number of failed commands
 	return failedCommands
 }
