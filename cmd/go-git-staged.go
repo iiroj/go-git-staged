@@ -16,6 +16,8 @@ func Execute(args []string) (failedCommands int) {
 	var workingDir string
 	// Declare variable for --relative flag
 	var relative bool
+	// Declare variable for --verbose flag
+	var verbose bool
 	// Declare variable for --glob flags
 	var globs []string
 	// Declare variable for --commands flags
@@ -87,6 +89,19 @@ func Execute(args []string) (failedCommands int) {
 		// Successful exit
 		if failedCommands == 0 {
 			fmt.Printf("%s Got git staged!\n", internal.DoneChar)
+
+			// Print each command label and stdout
+			if verbose == true {
+				fmt.Println()
+
+				for _, commandResult := range commandResults {
+					if len(commandResult.Stdout) > 0 {
+						fmt.Println(fmt.Sprintf("%s %s:", internal.InfoChar, commandResult.Label))
+						fmt.Println(string(commandResult.Stdout))
+					}
+				}
+			}
+
 			return
 		}
 
@@ -120,7 +135,9 @@ func Execute(args []string) (failedCommands int) {
 	// Add --working-dir flag
 	goGitStaged.Flags().StringVarP(&workingDir, "working-dir", "w", defaultWorkingDir, "Working directory for commands")
 	// Add --relative flag
-	goGitStaged.Flags().BoolVar(&relative, "relative", false, "Use file paths relative to --working-dir (default \"false\")")
+	goGitStaged.Flags().BoolVar(&relative, "relative", false, "Use file paths relative to --working-dir instead of absolute")
+	// Add --verbose flag
+	goGitStaged.Flags().BoolVarP(&verbose, "verbose", "v", false, "Print command stdout after success instead of only fail")
 	// Add --glob flags
 	goGitStaged.Flags().StringArrayVarP(&globs, "glob", "g", globs, "Glob of files passed to following --command")
 	goGitStaged.MarkFlagRequired("glob")

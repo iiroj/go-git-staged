@@ -11,10 +11,10 @@ type Pair struct {
 
 // ParseGlobCommands parses the command line arguments --glob and --command to a mapping
 func ParseGlobCommands(args []string) (pairs []Pair, err error) {
-	// Filter args other than --working-dir or --relative
+	// Filter args other than --working-dir, --relative, --verbose
 	filteredArgs := make([]string, 0)
 	for _, str := range args {
-		if str != "-w" && str != "--working-dir" && str != "--relative" {
+		if str != "-w" && str != "--working-dir" && str != "--relative" && str != "--verbose" && str != "-v" {
 			filteredArgs = append(filteredArgs, str)
 		}
 	}

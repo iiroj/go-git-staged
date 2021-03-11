@@ -9,8 +9,9 @@ import (
 
 // CommandResult contains the result of a single command
 type CommandResult struct {
-	Label string
-	Err   error
+	Label  string
+	Stdout []byte
+	Err    error
 }
 
 // RunCommands creates commands and runs them
@@ -41,8 +42,8 @@ func RunCommands(commands []Command) (commandResults []CommandResult) {
 			// Run the command in a goroutine, and gather errors
 			commandGroup[k] = func() {
 				cmd := exec.Command(command, files...)
-				_, err := cmd.Output()
-				commandResults = append(commandResults, CommandResult{command, err})
+				stdout, err := cmd.Output()
+				commandResults = append(commandResults, CommandResult{command, stdout, err})
 			}
 		}
 
