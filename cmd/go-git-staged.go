@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/iiroj/go-git-staged/char"
 	"github.com/iiroj/go-git-staged/internal"
 	"github.com/spf13/cobra"
 )
@@ -38,40 +39,40 @@ func Execute(args []string) (failedCommands int) {
 		// Resolve git root directory
 		rootDir, rootDirErr := internal.ResolveRootDir(workingDir)
 		if rootDirErr != nil {
-			fmt.Printf("%s Failed to resolve git directory\n", internal.FailChar)
+			fmt.Printf("%s Failed to resolve git directory\n", char.Fail)
 			return
 		}
 
 		// Get staged files
 		files, filesErr := internal.GetFiles(allFiles == false)
 		if filesErr != nil {
-			fmt.Printf("%s Failed to get staged files\n", internal.FailChar)
+			fmt.Printf("%s Failed to get staged files\n", char.Fail)
 			return
 		}
 		filesLen := len(files)
 		if filesLen == 0 {
 			// Exit if there were no staged files
-			fmt.Printf("%s No need to Go, working tree index is clean\n", internal.InfoChar)
+			fmt.Printf("%s No need to Go, working tree index is clean\n", char.Info)
 			return
 		} else if filesLen == 1 {
 			// todo: is this the optimal way?
-			fmt.Printf("%s Going with 1 staged file\n", internal.DoneChar)
+			fmt.Printf("%s Going with 1 staged file\n", char.Done)
 		} else {
 			// Update spinner with number of staged files
-			fmt.Printf("%s Going with %d staged files\n", internal.DoneChar, filesLen)
+			fmt.Printf("%s Going with %d staged files\n", char.Done, filesLen)
 		}
 
 		// Parse --glob and --command args to a map with files
 		globCommands, globCommandsErr := internal.ParseGlobCommands(args)
 		if globCommandsErr != nil {
-			fmt.Printf("%s %s", internal.FailChar, globCommandsErr.Error())
+			fmt.Printf("%s %s", char.Fail, globCommandsErr.Error())
 			return
 		}
 
 		// Normalize file paths to either absolute or relative to workingDir
 		normalizedFiles, normalizedFilesErr := internal.NormalizeFiles(files, rootDir, relative, workingDir)
 		if normalizedFilesErr != nil {
-			fmt.Printf("%s %s", internal.FailChar, normalizedFilesErr.Error())
+			fmt.Printf("%s %s", char.Fail, normalizedFilesErr.Error())
 			return
 		}
 
@@ -90,7 +91,7 @@ func Execute(args []string) (failedCommands int) {
 
 		// Successful exit
 		if failedCommands == 0 {
-			fmt.Printf("%s Got git staged!\n", internal.DoneChar)
+			fmt.Printf("%s Got git staged!\n", char.Done)
 
 			// Print each command label and stdout
 			if verbose == true {
@@ -98,7 +99,7 @@ func Execute(args []string) (failedCommands int) {
 
 				for _, commandResult := range commandResults {
 					if len(commandResult.Stdout) > 0 {
-						fmt.Println(fmt.Sprintf("%s %s (%s):", internal.RunChar, commandResult.Label, commandResult.Info))
+						fmt.Println(fmt.Sprintf("%s %s (%s):", char.Run, commandResult.Label, commandResult.Info))
 						fmt.Println(string(commandResult.Stdout))
 					}
 				}
@@ -109,9 +110,9 @@ func Execute(args []string) (failedCommands int) {
 
 		// There were failed results
 		if failedCommands == 1 {
-			fmt.Printf("%s Got 1 failure from commands\n", internal.FailChar)
+			fmt.Printf("%s Got 1 failure from commands\n", char.Fail)
 		} else {
-			fmt.Printf("%s Got %d failes from commands:\n", internal.FailChar, failedCommands)
+			fmt.Printf("%s Got %d failes from commands:\n", char.Fail, failedCommands)
 		}
 
 		// Do not show cobra help message in this case
@@ -124,7 +125,7 @@ func Execute(args []string) (failedCommands int) {
 		// Print the command label and error message for each fail
 		for _, commandResult := range commandResults {
 			if commandResult.Err != nil {
-				fmt.Println(fmt.Sprintf("%s %s (%s):", internal.RunChar, commandResult.Label, commandResult.Info))
+				fmt.Println(fmt.Sprintf("%s %s (%s):", char.Run, commandResult.Label, commandResult.Info))
 				fmt.Println(commandResult.Err.Error())
 				fmt.Println()
 			}

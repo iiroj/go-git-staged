@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+
+	"github.com/iiroj/go-git-staged/char"
 )
 
 // CommandResult contains the result of a single command
@@ -30,7 +32,7 @@ func RunCommands(commands []Command) (commandResults []CommandResult) {
 
 		// Print a label for the current glob slice, and how many files they matched
 		info := fmt.Sprintf("%d files (%s)", len(files), strings.Join(command.globs, ", "))
-		fmt.Printf("  %s %s:\n", RunChar, info)
+		fmt.Printf("  %s %s:\n", char.Run, info)
 
 		// Group all commands
 		commandGroup := make([]func(), len(command.commands))
