@@ -53,7 +53,10 @@ docker_manifests:
       - ghcr.io/iiroj/go-git-staged:{{ .Version }}-arm64v8
 
 brews:
-  - homepage: https://github.com/iiroj/go-git-staged
+  - tap:
+      owner: iiroj
+      name: go-git-staged
+    homepage: https://github.com/iiroj/go-git-staged
     description: Run commands on files staged in git.\nFilter files using globs and pass them to their respective commands as arguments.
     license: MIT
     dependencies:
