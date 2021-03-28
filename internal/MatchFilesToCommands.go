@@ -28,7 +28,7 @@ func MatchFilesToCommands(pairs []Pair, files []string) (commands []Command, err
 				}
 
 				// If the filename matched the glob, add matches
-				if match == true {
+				if match {
 					matches = append(matches, filename)
 				}
 			}

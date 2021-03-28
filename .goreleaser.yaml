@@ -1,0 +1,60 @@
+project_name: go-git-staged
+
+builds:
+  - env: 
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+dockers:
+  - use_buildx: true
+    image_templates: ["ghcr.io/iiroj/go-git-staged:{{ .Version }}-amd64"]
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - --pull
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.description={{ .ProjectName }}
+      - --label=org.opencontainers.image.url=https://github.com/iiroj/go-git-staged
+      - --label=org.opencontainers.image.source=https://github.com/iiroj/go-git-staged
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+
+  - use_buildx: true
+    image_templates: ["ghcr.io/iiroj/go-git-staged:{{ .Version }}-arm64v8"]
+    goarch: arm64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - --pull
+      - --platform=linux/arm64/v8
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.description={{ .ProjectName }}
+      - --label=org.opencontainers.image.url=https://github.com/iiroj/go-git-staged
+      - --label=org.opencontainers.image.source=https://github.com/iiroj/go-git-staged
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+
+docker_manifests:
+  - name_template: ghcr.io/iiroj/go-git-staged:{{ .Version }}
+    image_templates:
+      - ghcr.io/iiroj/go-git-staged:{{ .Version }}-amd64
+      - ghcr.io/iiroj/go-git-staged:{{ .Version }}-arm64v8
+
+  - name_template: ghcr.io/iiroj/go-git-staged:latest
+    image_templates:
+      - ghcr.io/iiroj/go-git-staged:{{ .Version }}-amd64
+      - ghcr.io/iiroj/go-git-staged:{{ .Version }}-arm64v8
+
+brews:
+  - homepage: https://github.com/iiroj/go-git-staged
+    description: Run commands on files staged in git.\nFilter files using globs and pass them to their respective commands as arguments.
+    license: MIT
+    dependencies:
+      - name: git

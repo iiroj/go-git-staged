@@ -44,7 +44,7 @@ func Execute(args []string) (failedCommands int) {
 		}
 
 		// Get staged files
-		files, filesErr := internal.GetFiles(allFiles == false)
+		files, filesErr := internal.GetFiles(!allFiles)
 		if filesErr != nil {
 			fmt.Printf("%s Failed to get staged files\n", char.Fail)
 			return
@@ -94,13 +94,13 @@ func Execute(args []string) (failedCommands int) {
 			fmt.Printf("%s Got git staged!\n", char.Done)
 
 			// Print each command label and stdout
-			if verbose == true {
+			if verbose {
 				fmt.Println()
 
 				for _, commandResult := range commandResults {
 					if len(commandResult.Stdout) > 0 {
-						fmt.Println(fmt.Sprintf("%s %s (%s):", char.Run, commandResult.Label, commandResult.Info))
-						fmt.Println(string(commandResult.Stdout))
+						fmt.Printf("%s %s (%s):\n", char.Run, commandResult.Label, commandResult.Info)
+						fmt.Printf(string(commandResult.Stdout) + "\n")
 					}
 				}
 			}
@@ -125,7 +125,7 @@ func Execute(args []string) (failedCommands int) {
 		// Print the command label and error message for each fail
 		for _, commandResult := range commandResults {
 			if commandResult.Err != nil {
-				fmt.Println(fmt.Sprintf("%s %s (%s):", char.Run, commandResult.Label, commandResult.Info))
+				fmt.Printf("%s %s (%s):", char.Run, commandResult.Label, commandResult.Info)
 				fmt.Println(commandResult.Err.Error())
 				fmt.Println()
 			}
@@ -145,10 +145,10 @@ func Execute(args []string) (failedCommands int) {
 	goGitStaged.Flags().BoolVarP(&verbose, "verbose", "v", false, "Print command stdout after success instead of only fail")
 	// Add --glob flags
 	goGitStaged.Flags().StringArrayVarP(&globs, "glob", "g", globs, "Glob of files passed to following --command")
-	goGitStaged.MarkFlagRequired("glob")
+	_ = goGitStaged.MarkFlagRequired("glob")
 	// Add --commands flags
 	goGitStaged.Flags().StringArrayVarP(&commands, "command", "c", commands, "Command to run with files matching previous --glob")
-	goGitStaged.MarkFlagRequired("command")
+	_ = goGitStaged.MarkFlagRequired("command")
 
 	// If the execute failed for some other reason, assume 1 error
 	if error := goGitStaged.Execute(); error != nil {

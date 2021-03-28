@@ -34,7 +34,7 @@ func ParseGlobCommands(args []string) (pairs []Pair, err error) {
 		if str == "-g" || str == "--glob" {
 			// If the arg is not a glob, it was a command
 			// This new --glob flag marks a second group of GlobCommands
-			if currentIsGlob == false {
+			if !currentIsGlob {
 				currentGlobIndex++
 				currentIsGlob = true
 			}
