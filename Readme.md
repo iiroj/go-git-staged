@@ -26,6 +26,21 @@ Flags:
   -h, --help                  help for go-git-staged
 ```
 
+# Installation
+
+See the [Latest Release](https://github.com/iiroj/go-git-staged/releases/latest) page for the binaries that can be copied directly.
+
+## macOS
+
+### Homebrew
+
+This repository contains a [Homebrew Tap Formula](https://docs.brew.sh/Taps) for easier installation:
+
+```sh
+❯ brew tap iiroj/go-git-staged https://github.com/iiroj/go-git-staged
+❯ brew install go-git-staged
+```
+
 # Usage
 
 The `go-git-staged` cli uses no configuration files and is run directly using flags. Build pairs of `--glob` and their following `--command` flags to run multiple commands on multiple globs. By default files staged in git are globbed. Using the `--all` flag every file known to git will be used instead.
