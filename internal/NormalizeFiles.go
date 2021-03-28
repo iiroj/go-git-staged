@@ -14,7 +14,7 @@ func NormalizeFiles(files []string, basePath string, relative bool, relativeTo s
 		absoluteFiles[i] = filepath.Join(basePath, file)
 	}
 
-	if relative == false {
+	if !relative {
 		return absoluteFiles, nil
 	}
 
