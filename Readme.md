@@ -28,7 +28,7 @@ Flags:
 
 # Installation
 
-See the [Latest Release](https://github.com/iiroj/go-git-staged/releases/latest) page for the binaries that can be copied directly.
+See the [Latest Release](https://github.com/iiroj/go-git-staged/releases/latest) page for pre-built binaries.
 
 ## macOS
 
