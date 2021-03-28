@@ -1,0 +1,31 @@
+name: Pull Request
+
+on:
+  pull_request:
+
+jobs:
+  goreleaser:
+    name: GoReleaser
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Enable Docker ARM builds # https://github.com/linuxkit/linuxkit/releases/tag/v0.8
+        run: sudo docker run --privileged linuxkit/binfmt:v0.8
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: build --snapshot
